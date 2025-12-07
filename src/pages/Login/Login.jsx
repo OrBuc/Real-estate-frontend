@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 
 import api from "../../services/api";
-import { login } from "../../store/authSlice";
+import { setUser } from "../../store/authSlice";
 
 export default function Login() {
   const dispatch = useDispatch();
@@ -31,12 +31,12 @@ export default function Login() {
       // אימות מול ה-backend
       const res = await api.post("/auth/login", { email, password });
 
-      // שמירת JWT token וה-user
+      // שמירת JWT token וה-user ב-localStorage
       localStorage.setItem("authToken", res.data.token);
       localStorage.setItem("currentUser", JSON.stringify(res.data.user));
 
-      // עדכון Redux
-      dispatch(login({ email, password }));
+      // עדכון Redux (cache זמני)
+      dispatch(setUser(res.data.user));
 
       toast.success("התחברת בהצלחה");
       navigate("/dashboard");

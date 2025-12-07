@@ -1,37 +1,3 @@
-/** Dashboard.jsx - דף ניהול הנכסים האישי.
- *
- * תפקידים:
- * --------
- * 1. הצגת רשימת הנכסים של המשתמש המחובר
- * 2. הוספת נכס חדש דרך Modal
- * 3. עריכת נכס קיים
- * 4. מחיקת נכס (עם אישור)
- * 5. שינוי סטטוס (זמין/נמכר)
- *
- * State Management:
- * -----------------
- * - קורא session ו-users מ-Redux לזיהוי המשתמש
- * - קורא assets ומסנן רק את הנכסים של המשתמש
- * - שולח actions: addProperty, updateProperty, deleteProperty, toggleStatus
- *
- * Local State:
- * -----------
- * - isOpen: האם ה-Modal פתוח
- * - editing: הנכס שנערך כרגע (null = הוספה חדשה)
- *
- * זרימת עבודה:
- * ------------
- * 1. לחיצה על "הוסף נכס" → פותח Modal ריק
- * 2. לחיצה על "ערוך" → פותח Modal עם נתוני הנכס
- * 3. שמירה → dispatch ל-Redux + סגירת Modal
- * 4. מחיקה → אישור + dispatch
- * 5. שינוי סטטוס → dispatch מיידי
- *
- * CSS Modules:
- * -----------
- * - styles.header: כותרת עם כפתור
- */
-
 import React, { useState, useEffect } from "react";
 import styles from "./Dashboard.module.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -44,25 +10,14 @@ import api from "../../services/api.js";
 // פונקציה: קומפוננטת ניהול נכסים - רשימה + הוספה/עריכה/מחיקה/סטטוס.
 export default function Dashboard() {
   const dispatch = useDispatch();
-
-  // קריאת נתוני אימות מ-localStorage (backend user)
-  const [currentUser, setCurrentUser] = useState(null);
   const [myAssets, setMyAssets] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // טעינת המשתמש המחובר
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("currentUser") || "null");
-    setCurrentUser(user);
-  }, []);
-
   // טעינת נכסי המשתמש מהשרת
   useEffect(() => {
-    if (!currentUser?.id) return;
-
     const fetchProperties = async () => {
       try {
-        const res = await api.get(`/properties?userId=${currentUser.id}`);
+        const res = await api.get("/properties");
         setMyAssets(res.data);
         dispatch(setProperties(res.data));
       } catch (error) {
@@ -73,7 +28,7 @@ export default function Dashboard() {
     };
 
     fetchProperties();
-  }, [currentUser, dispatch]);
+  }, [dispatch]);
 
   // State מקומי לניהול Modal
   const [isOpen, setIsOpen] = useState(false); // האם Modal פתוח
@@ -95,8 +50,6 @@ export default function Dashboard() {
 
   // פונקציה: שמירת טופס (הוספה/עדכון) וסגירה.
   const handleSubmit = async (data) => {
-    if (!currentUser) return;
-
     try {
       if (editing) {
         // מצב עריכה - עדכן נכס קיים
