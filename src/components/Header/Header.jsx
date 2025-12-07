@@ -9,6 +9,8 @@ import Logo from "../../assets/logo.svg";
 // מבצעת logout ומפנה לדף התחברות.
 const handleLogoutClick = (dispatch, navigate) => {
   dispatch(logout()); // ניקוי session ב-Redux
+  localStorage.removeItem("authToken"); // ניקוי JWT token
+  localStorage.removeItem("currentUser"); // ניקוי פרטי משתמש
   navigate("/login"); // מעבר לדף התחברות
 };
 
@@ -18,11 +20,7 @@ export default function Header() {
   const navigate = useNavigate();
 
   // קריאת נתוני אימות מ-Redux
-  const session = useSelector((s) => s.auth.session);
-  const users = useSelector((s) => s.auth.users);
-
-  // חיפוש המשתמש המחובר (אם קיים)
-  const currentUser = users.find((u) => u.id === session?.userId);
+  const currentUser = useSelector((s) => s.auth.currentUser);
 
   return (
     <header className={styles.wrap} aria-label="סרגל עליון">
@@ -55,7 +53,7 @@ export default function Header() {
         {/* אם מחובר - ברכה וכפתור התנתקות */}
         {currentUser && (
           <>
-            <span>שלום, {currentUser.username}</span>
+            <span>שלום, {currentUser.name}</span>
             <button
               className="btn secondary"
               onClick={() => handleLogoutClick(dispatch, navigate)}
