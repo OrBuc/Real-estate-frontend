@@ -12,7 +12,7 @@ export default function PropertyForm({ initial, onCancel, onSubmit }) {
     price: "",
     location: "",
     description: "",
-    status: "זמין",
+    status: "available",
     image: "",
   });
 
@@ -28,7 +28,7 @@ export default function PropertyForm({ initial, onCancel, onSubmit }) {
         price: String(initial.price ?? ""), // המרה ל-string לשדה קלט
         location: initial.location || "",
         description: initial.description || "",
-        status: initial.status || "זמין",
+        status: initial.status || "available",
         image: initial.image || "",
       });
     }
@@ -166,8 +166,8 @@ export default function PropertyForm({ initial, onCancel, onSubmit }) {
           value={form.status}
           onChange={handleChange}
         >
-          <option value="זמין">זמין</option>
-          <option value="נמכר">נמכר</option>
+          <option value="available">זמין</option>
+          <option value="sold">נמכר</option>
         </select>
         {errors.status && <div className="error">{errors.status}</div>}
       </div>

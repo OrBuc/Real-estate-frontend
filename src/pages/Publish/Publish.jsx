@@ -14,8 +14,18 @@ export default function Publish() {
 
   // פונקציה: שליחת טופס – יצירת נכס והודעת הצלחה.
   const handleSubmit = async (data) => {
-    if (!userId) {
+    // בדיקה אם יש token (אימות חדש)
+    const token = localStorage.getItem("authToken");
+    
+    if (!token && !userId) {
       toast.error("יש להתחבר כדי לפרסם נכס");
+      navigate("/login");
+      return;
+    }
+
+    if (!token) {
+      toast.error("אנא התחבר מחדש דרך המערכת");
+      navigate("/login");
       return;
     }
 
@@ -29,12 +39,28 @@ export default function Publish() {
         navigate("/dashboard");
       }, 1500);
     } catch (error) {
-      toast.error(error?.response?.data?.message || "שגיאה בפרסום נכס");
+      console.error("Full error:", error);
+      console.error("Error response:", error.response);
+      console.error("Error data:", error.response?.data);
+      console.error("Error message:", error.response?.data?.message);
+      console.error("Error error field:", error.response?.data?.error);
+      
+      const errorMsg = error?.response?.data?.message || error?.response?.data?.error || "שגיאה בפרסום נכס";
+      
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        toast.error("נדרשת התחברות מחדש");
+        navigate("/login");
+      } else {
+        toast.error(errorMsg);
+      }
     }
   };
 
+  // בדיקה אם יש token תקף
+  const token = localStorage.getItem("authToken");
+
   // פונקציה: הצגת הודעה למשתמש לא מחובר.
-  if (!userId) {
+  if (!token && !userId) {
     return (
       <div className={styles.wrap}>
         <div className={styles.notice}>
@@ -46,6 +72,26 @@ export default function Publish() {
             </Link>
             <Link to="/register" className="btn secondary">
               הרשם
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // אם יש userId אבל אין token - צריך להתחבר מחדש
+  if (userId && !token) {
+    return (
+      <div className={styles.wrap}>
+        <div className={styles.notice}>
+          <h2>נדרשת התחברות מחדש</h2>
+          <p>בגלל שיפורי אבטחה במערכת, נדרשת התחברות מחדש.</p>
+          <p style={{ fontSize: '14px', color: '#666' }}>
+            (הנתונים הישנים שלך נשמרו, רק צריך להתחבר מחדש)
+          </p>
+          <div className={styles.actions}>
+            <Link to="/login" className="btn">
+              התחבר מחדש
             </Link>
           </div>
         </div>
